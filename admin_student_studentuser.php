@@ -1,0 +1,451 @@
+<?php 
+    include 'config.php';
+    $query = "select * from student";
+    $result = mysqli_query($link, $query);
+?>
+<?php
+// Include configuration file
+include 'config.php'; // Ensure this path is correct
+
+// Initialize the session
+session_start();
+
+// Check if the user is logged in; if not, redirect them to the login page
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
+    header("location: adminlogin.php");
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shorcut icon" type="x-icon" href="assets/imgs/logo.jpg">
+    <title>Graduate Portal</title>
+    <!-- ======= Styles ====== -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/delete.css">
+    <link rel="stylesheet" href="assets/css/update_user_info_modal.css">
+    <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css">
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.css' rel='stylesheet' />
+    <style>
+        .user {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            margin-right: 5%;
+        }
+        table {
+            margin-left: 5%;
+            width: 95%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        td{
+            align-items: center;
+        }
+       .centered-header {
+            text-align: center;
+        }
+
+        /* Image Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+        }
+        .modal-content {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            margin: auto;
+            padding: 0;
+            width: 80%;
+            max-width: 700px;
+        }
+        .modal-content img {
+            margin: auto;
+            display: block;
+            width: 100%;
+            max-width: 700px;
+        }
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            color: black;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: red;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .action-links {
+            display: flex;
+            justify-content: space-between;
+            
+        }
+        .action-links .separator {
+            margin: 0 10px; /* Adjust the spacing as needed */
+        }
+
+        .profile-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px;
+        }
+        .profile-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        .profile-image img {
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+        }
+        .profile-form {
+            flex: 2;
+            margin-left: 20px;
+        }
+        .profile-form form {
+            display: flex;
+            flex-direction: column;
+        }
+        .profile-form input, .profile-form button {
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 1rem;
+        }
+        .profile-form button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .profile-form button:hover {
+            background-color: #0056b3;
+        }
+
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 300px; /*change size dropdown menu*/
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .dropdown-content a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .dropdown-content a:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .dropdown-content::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            border-width: 10px;
+            border-style: solid;
+            border-color: transparent transparent #fff transparent;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- =============== Navigation ================ -->
+    <div class="container">
+        <div class="navigation">
+        <ul>
+                <div style="background-color: red; width: 100%; height: 80%; margin-top: 5%;">
+                    <li>
+                        <center>
+                            <img src="https://apps.evsu.edu.ph/assets/img/icons/free-ed-is.png?v=3" style="width: 80%; height: 40%; margin-top: 5%;" alt="error">
+                        </center>
+                    </li>
+                </div>
+                    <li>
+                        <a href="admin_dashboard.php">
+                            <span class="icon">
+                                <ion-icon name="home-outline"></ion-icon>
+                            </span>
+                            <span class="title">Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="admin_student_document.php">
+                            <span class="icon">
+                                <ion-icon name="document-outline"></ion-icon>
+                            </span>
+                            <span class="title">Document</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="admin_student_schedule.php">
+                            <span class="icon">
+                                <ion-icon name="calendar-outline"></ion-icon>
+                            </span>
+                            <span class="title">Event Schedule</span>
+                        </a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#">
+                            <span class="icon">
+                                <ion-icon name="megaphone-outline"></ion-icon>
+                            </span>
+                            <span class="title">Announcement</span>
+                        </a>
+                        <div class="dropdown-content">
+                        <a href="admin_student_document_upload.php">General Announcement</a>
+                            <a href="admin_user_profile_general_info.php">On the Job Training(OJT)</a>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="admin_student_studentuser.php">
+                            <span class="icon">
+                                <ion-icon name="person-outline"></ion-icon>
+                            </span>
+                            <span class="title">Student Info</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="admin_document_record.php">
+                            <span class="icon">
+                                <ion-icon name="person-circle-outline"></ion-icon>
+                            </span>
+                            <span class="title">Student Record</span>
+                        </a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#">
+                            <span class="icon">
+                                <ion-icon name="person-circle-outline"></ion-icon>
+                            </span>
+                            <span class="title">Profile</span>
+                        </a>
+                        <div class="dropdown-content">
+                            <a href="admin_user_profile_general_info.php">General Info</a>
+                            <a href="admin_user_profile_change_password.php">Change Password</a>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="admin_logout.php">
+                            <span class="icon">
+                                <ion-icon name="log-out-outline"></ion-icon>
+                            </span>
+                            <span class="title">Sign Out</span>
+                        </a>
+                    </li>
+            </ul>
+        </div>
+        <!-- ========================= Main ==================== -->
+        <div class="main">
+            <div class="topbar">
+                <div class="toggle">
+                    <ion-icon name="menu-outline"></ion-icon>
+                </div>
+                
+
+                <div class="user">
+                    <h1><?php echo htmlspecialchars($_SESSION["username"]); ?><h1>
+                </div>
+            </div>
+            <div class="details">
+                <!-- ================= ================ -->
+                <div class="document" style="width: 150%;">
+                    <div class="cardHeader">
+                        <h2>Document</h2>
+                    </div>
+                    <div style="height: 600px; width: 100%; overflow-y: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <td class="centered-header">id</td>
+                                    <td class="centered-header">Image</td>
+                                    <td class="centered-header">Student ID</td>
+                                    <td class="centered-header">Fullname</td>
+                                    <td class="centered-header">Course</td>
+                                    <td class="centered-header">Phone</td>
+                                    <td class="centered-header">Address</td>
+                                    <td class="centered-header">Gmail</td>
+                                    <td class="centered-header">Action</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                    while($row = $result->fetch_assoc()) {
+                                        ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($row['id']); ?></td>
+                                                <td>
+                                                    <img src="<?php echo htmlspecialchars($row['img']); ?>" style="width: 50px; height: 50px;" alt="error" onclick="openImageModal('<?php echo htmlspecialchars($row['img']); ?>')">
+                                                </td>
+                                                <td><?php echo htmlspecialchars($row['student_id']); ?></td>
+                                                <td><?php echo htmlspecialchars($row['fullname']); ?></td>
+                                                <td><?php echo htmlspecialchars($row['course']); ?></td>
+                                                <td><?php echo htmlspecialchars($row['phone']); ?></td>
+                                                <td><?php echo htmlspecialchars($row['address']); ?></td>
+                                                <td><?php echo htmlspecialchars($row['gmail']); ?></td>
+                                                <td style="width: 10%">
+                                                    <span class="action-links">
+                                                        <a href="javascript:void(0);" onclick="openModal('<?php echo htmlspecialchars($row['id']); ?>', 
+                                                            '<?php echo htmlspecialchars($row['fullname']); ?>', '<?php echo htmlspecialchars($row['course']); ?>', 
+                                                            '<?php echo htmlspecialchars($row['phone']); ?>', '<?php echo htmlspecialchars($row['address']); ?>', 
+                                                            '<?php echo htmlspecialchars($row['gmail']); ?>')">Edit</a>
+                                                        <span class="separator">||</span>
+                                                        <a href="javascript:void(0);" onclick="openDeleteModal('<?php echo htmlspecialchars($row['id']); ?>')">Delete</a>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        <?php
+                                    }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeDeleteModal()">&times;</span>
+            <h2>Delete Student Record</h2>
+            <p>Are you sure you want to delete this record?</p>
+            <form id="deleteForm" method="post" action="delete_student-record.php">
+                <input type="hidden" id="deleteStudentId" name="studentId">
+                <button type="submit">Yes, Delete</button>
+                <button type="button" onclick="closeDeleteModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div id="updateModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Update Student Information</h2>
+            <form id="updateForm" method="post" action="update_student-record.php" enctype="multipart/form-data">
+                <input type="hidden" id="studentId" name="studentId">
+                <label for="fullname">Fullname:</label>
+                <input type="text" id="fullname" name="fullname" required>
+                <label for="course">Course:</label>
+                <input type="text" id="course" name="course" required>
+                <label for="phone">Phone:</label>
+                <input type="text" id="phone" name="phone" required>
+                <label for="address">Address:</label>
+                <input type="text" id="address" name="address" required>
+                <label for="gmail">Gmail:</label>
+                <input type="email" id="gmail" name="gmail" required>
+                <label for="img">Profile Picture:</label>
+                <input type="file" id="img" name="img">
+                <button type="submit">Update</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="modalImage" src="" alt="error" style="width: 100%;">
+        </div>
+    </div>
+
+    <!-- =========== Scripts =========  -->
+    <script src="assets/js/main.js"></script>
+
+    <!-- ====== ionicons ======= -->
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js'></script>
+    <script src='./assets/js/calendar.js'></script>
+    <script src='./assets/js/modal.js'></script>
+
+    <script>
+        // Get the image modal and close button
+        var imageModal = document.getElementById('imageModal');
+        var closeBtn = document.querySelector('#imageModal .close');
+
+        // Function to open the modal with the clicked image
+        function openImageModal(src) {
+            var modalImage = document.getElementById('modalImage');
+            modalImage.src = src;
+            imageModal.style.display = 'block';
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        closeBtn.onclick = function() {
+            imageModal.style.display = 'none';
+        }
+
+        // Close the modal if the user clicks outside of it
+        window.onclick = function(event) {
+            if (event.target == imageModal) {
+                imageModal.style.display = 'none';
+            }
+        }
+    </script>
+
+     <!-- submenu -->
+     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    const user = document.querySelector('.user');
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+
+    user.addEventListener('click', function() {
+        dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+    });
+
+    document.addEventListener('click', function(event) {
+        if (!user.contains(event.target)) {
+            dropdownMenu.style.display = 'none';
+        }
+    });
+});
+    </script> 
+</body>
+</html>
